@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import cv2
 import numpy as np
@@ -12,9 +13,15 @@ import time
 # TESSERACT CONFIGURATION
 # ==================================================
 
-pytesseract.pytesseract.tesseract_cmd = (
-    r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-)
+# Windows uses the local Tesseract installation.
+# Streamlit Cloud uses Linux Tesseract.
+if os.name == "nt":
+    pytesseract.pytesseract.tesseract_cmd = (
+        r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    )
+else:
+    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+
 
 # ==================================================
 # PAGE CONFIGURATION
@@ -25,6 +32,7 @@ st.set_page_config(
     page_icon="🌴",
     layout="wide"
 )
+
 
 # ==================================================
 # CUSTOM CSS
@@ -62,6 +70,7 @@ h1, h2, h3 {
 </style>
 """, unsafe_allow_html=True)
 
+
 # ==================================================
 # HEADER
 # ==================================================
@@ -78,6 +87,7 @@ st.write(
 )
 
 st.divider()
+
 
 # ==================================================
 # LANGUAGE OPTIONS
@@ -99,6 +109,7 @@ language = st.selectbox(
     "Select the manuscript language",
     list(languages.keys())
 )
+
 
 # ==================================================
 # CHECK TESSERACT
@@ -132,6 +143,7 @@ if tesseract_ready:
             f"The {language} OCR language model "
             "is not available."
         )
+
 
 # ==================================================
 # IMAGE UPLOAD
@@ -392,8 +404,8 @@ if uploaded_file is not None:
                             "Translating text..."
                         ):
 
-                            # Translate the entire text in one request
-                            # for ordinary short manuscripts.
+                            # Translate short manuscripts
+                            # in one request.
                             if len(extracted_text) <= 4500:
 
                                 translated_text = GoogleTranslator(
@@ -403,8 +415,8 @@ if uploaded_file is not None:
 
                             else:
                                 # Split long text into chunks.
-                                # A short pause reduces rapid requests,
-                                # but does not bypass provider rate limits.
+                                # Pauses do not guarantee avoidance
+                                # of translation service rate limits.
 
                                 words = extracted_text.split()
                                 chunks = []
@@ -539,6 +551,7 @@ else:
     st.info(
         "Upload a manuscript image to begin."
     )
+
 
 # ==================================================
 # FOOTER
